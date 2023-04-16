@@ -13,9 +13,11 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-        
+
       - name: Dump log
         run: |
           pwd
           ls
+          cd scripts
           pwd
+          sh build-shotcut.sh
