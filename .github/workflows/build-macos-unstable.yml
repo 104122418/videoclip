@@ -15,6 +15,5 @@ jobs:
         shell: bash
         run: |
           pwd
-          cd ./scripts/
+          ls
           pwd
-          sh ./build-shotcut.sh
