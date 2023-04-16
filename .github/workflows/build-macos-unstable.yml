@@ -15,10 +15,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Dump log
+        shell: bash
         run: |
           pwd
           ls
           cd scripts
           pwd
           sh build-shotcut.sh
-        shell: bash
