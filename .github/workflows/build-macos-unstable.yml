@@ -12,4 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dump log
-        run: sh ../../scripts/build-shotcut.sh
+        shell: bash
+        run: |
+          pwd
+          cd ../../scripts/
+          pwd
+          sh ../../scripts/build-shotcut.sh
