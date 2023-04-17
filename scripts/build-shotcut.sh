@@ -110,10 +110,10 @@ MLT_DISABLE_SOX=0
 CONFIGFILE=build-shotcut.conf
 
 # If defined to 1, outputs trace log lines
-TRACE=0
+TRACE=1
 
 # If defined to 1, outputs debug log lines
-DEBUG=0
+DEBUG=1
 
 # We need to set LANG to C to avoid e.g. svn from getting to funky
 export LANG=C

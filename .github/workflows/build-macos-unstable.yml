@@ -26,4 +26,4 @@ jobs:
           pwd
           git --version
           bash --version
-          sh build-shotcut.sh
+          sh build-shotcut.sh -o Darwin -a arm64
