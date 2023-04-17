@@ -125,7 +125,7 @@ export LANG=C
 #################################################################
 # usage
 # Reports legal options to this script
-usage() {
+function usage {
   echo "Usage: $0 [-c config-file] [-o target-os] [-s] [-t] [-h]"
   echo "Where:"
   echo -e "\t-c config-file\tDefaults to $CONFIGFILE"
@@ -138,7 +138,7 @@ usage() {
 #################################################################
 # parse_args
 # Parses the arguments passed in $@ and sets some global vars
-parse_args() {
+function parse_args {
   CONFIGFILEOPT=""
   DETACH=0
   while getopts ":tsc:a:o:v:" OPT; do
@@ -176,7 +176,7 @@ parse_args() {
 # to_key
 # Returns a numeric key from a known subproject
 # $1 : string: ffmpeg, mlt, etc.
-to_key() {
+function to_key {
   case $1 in
     ffmpeg)
       echo 0
@@ -259,14 +259,14 @@ to_key() {
 #################################################################
 # lookup - lookup a value from an array and return it
 # $1 array name, $2 subdir name, that is, text string
-lookup() {
+function lookup {
   eval echo "\${${1}[`to_key $2`]}"
 }
 
 #################################################################
 # version - convert version string to a number to make comparisons
 
-version() {
+function version {
   echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'
 }
 
@@ -278,7 +278,7 @@ version() {
 #################################################################
 # init_log_file
 # Write some init stuff
-init_log_file() {
+function init_log_file {
   log `date`
   log $0 starting
 }
@@ -287,7 +287,7 @@ init_log_file() {
 # trace
 # Function that prints a trace line
 # $@ : arguments to be printed
-trace() {
+function trace {
   if test "1" = "$TRACE" ; then
     if test "1" = "$LOG_COLORS"; then
       echo -e "\e[35mTRACE:\e[0m $@"
@@ -301,7 +301,7 @@ trace() {
 # debug
 # Function that prints a debug line
 # $@ : arguments to be printed
-debug() {
+function debug {
   if test "1" = "$DEBUG" ; then
     if test "1" = "$LOG_COLORS"; then
       echo -e "\e[34mDEBUG:\e[0m $@"
@@ -315,7 +315,7 @@ debug() {
 # log
 # Function that prints a log line
 # $@ : arguments to be printed
-log() {
+function log {
   if test "1" = "$LOG_COLORS"; then
     echo -e "\e[96mLOG:\e[0m $@"
   else
@@ -327,7 +327,7 @@ log() {
 # log warning
 # Function that prints a warning line
 # $@ : arguments to be printed
-warn() {
+function warn {
   if test "1" = "$LOG_COLORS"; then
     echo -e "\e[33mWARN:\e[0m $@"
   else
@@ -339,7 +339,7 @@ warn() {
 # die
 # Function that prints a line and exists
 # $@ : arguments to be printed
-die() {
+function die {
   if test "1" = "$LOG_COLORS"; then
     echo -e "\e[31mERROR:\e[0m $@"
   else
@@ -352,7 +352,7 @@ die() {
 #################################################################
 # cmd
 # Function that does a (non-background, non-outputting) command, after logging it
-cmd() {
+function cmd {
   trace "Entering cmd @ = $@"
   log About to run command: "$@"
   "$@"
@@ -368,7 +368,7 @@ cmd() {
 # Reads $CONFIGFILE, parses it, and exports global variables reflecting the
 # content. Aborts, if the file does not exist or is not readable
 CONFIGURATION=""
-read_configuration() {
+function read_configuration {
   trace "Entering read_configuration @ = $@"
   if test ! -r "$CONFIGFILE"; then
     warn "Unable to read config file $CONFIGFILE"
@@ -1013,7 +1013,7 @@ function set_globals {
   INSTALL[26]="ninja -C build install"
 }
 
-build_ffmpeg_darwin() {
+function build_ffmpeg_darwin {
   make distclean || true
   MYCONFIG=`lookup CONFIG ffmpeg`
   cmd $MYCONFIG --prefix=build-arm64
@@ -1026,7 +1026,7 @@ build_ffmpeg_darwin() {
   cmd make install
 }
 
-install_ffmpeg_darwin() {
+function install_ffmpeg_darwin {
   for file in ffmpeg ffplay ffprobe; do
     cmd lipo -create build-arm64/bin/$file build-x86_64/bin/$file -output "$FINAL_INSTALL_DIR"/bin/$file
     libs=$(otool -L "$FINAL_INSTALL_DIR"/bin/$file | awk '/^\tbuild-arm64\// || /^\tbuild-x86_64\// {print $1}')
@@ -1051,21 +1051,21 @@ install_ffmpeg_darwin() {
   cmd cp -a build-arm64/include/ "$FINAL_INSTALL_DIR"/include/
 }
 
-build_ladspa_darwin() {
+function build_ladspa_darwin {
   cmd make -j $MAKEJ CC="clang -arch arm64 -arch x86_64"
 }
 
-install_ladspa() {
+function install_ladspa {
   cmd make install
   cmd install -d "$FINAL_INSTALL_DIR"/include
   cmd install -p -c ladspa.h "$FINAL_INSTALL_DIR"/include
 }
 
-build_movit_darwin() {
+function build_movit_darwin {
   cmd make -j $MAKEJ RANLIB="$RANLIB" CC="clang -arch arm64 -arch x86_64" CXX="clang++ -arch arm64 -arch x86_64" libmovit.la
 }
 
-install_shotcut_linux() {
+function install_shotcut_linux {
   cmd ninja install
   cmd install -p -c COPYING "$FINAL_INSTALL_DIR"
   cmd install -p -c "$QTDIR"/translations/qt_*.qm "$FINAL_INSTALL_DIR"/share/shotcut/translations
@@ -1081,14 +1081,14 @@ install_shotcut_linux() {
   cmd install -p -c /usr/lib/x86_64-linux-gnu/dri/*_drv_video.so "$FINAL_INSTALL_DIR"/lib/va
 }
 
-build_vmaf_darwin() {
+function build_vmaf_darwin {
   cmd ninja -C libvmaf/build-arm64 -j $MAKEJ
   export CFLAGS="$CFLAGS -arch x86_64" CXXFLAGS="$CXXFLAGS -arch x86_64"
   cmd meson setup libvmaf/build-x86_64 libvmaf --cross-file=x86_64-darwin -Denable_tests=false -Denable_docs=false -Dbuilt_in_models=false
   cmd ninja -C libvmaf/build-x86_64 -j $MAKEJ
 }
 
-install_vmaf() {
+function install_vmaf {
   if [ "$TARGET_OS" = "Darwin" ]; then
     cmd ninja install -C libvmaf/build-arm64
     cmd rm "$FINAL_INSTALL_DIR"/lib/libvmaf.1.dylib
@@ -1101,7 +1101,7 @@ install_vmaf() {
   cmd install -p -c model/*.json "$FINAL_INSTALL_DIR"/share/vmaf
 }
 
-preconfig_x265() {
+function preconfig_x265 {
   [ ! -d "10bit" ] && mkdir 10bit
   cd 10bit
   cmd cmake -G Ninja -D ENABLE_CLI=OFF -D ENABLE_SHARED=OFF -D EXPORT_C_API=OFF -D HIGH_BIT_DEPTH=ON $CMAKE_DEBUG_FLAG ../source
@@ -1110,7 +1110,7 @@ preconfig_x265() {
   cmd ln -s ../10bit/libx265.a libx265_main10.a
 }
 
-install_x265() {
+function install_x265 {
   cmd mv libx265.a libx265_main.a
   ar -M <<EOF
 CREATE libx265.a
@@ -1129,7 +1129,7 @@ EOF
 #################################################################
 # feedback_status
 # $@ status information
-feedback_status() {
+function feedback_status {
   trace "Entering feedback_status @ = $@"
   # Need to collect $@ in a single variable for cmd to work
   ARG=$@
@@ -1141,7 +1141,7 @@ feedback_status() {
 # $1 : SUCCESS, FAILURE, ABORTED
 # $2 : Additional information
 # Does the relevant feedback, and terminates.
-feedback_result() {
+function feedback_result {
   trace "Entering feedback_result @ = $@"
 
   # If needed, kill the checker process
@@ -1158,7 +1158,7 @@ feedback_result() {
 # check_abort
 # Function that checks if the user wanted to cancel what we are doing.
 # returns "stop" or "cont" as appropriate
-check_abort() {
+function check_abort {
   # log "$ARG"
   echo
 }
@@ -1171,7 +1171,7 @@ check_abort() {
 # is_newer_equal
 # Compares versions strings, and returns 1 if $1 is newer than $2
 # This is highly ineffective, I am sorry to say...
-is_newer_equal() {
+function is_newer_equal {
   trace "Entering is_newer_equal @ = $@"
   A1=`echo $1 | cut -d. -f1`
   A2=`echo $1 | cut -d. -f2`
@@ -1193,7 +1193,7 @@ is_newer_equal() {
 # $1: The directory to make clean in.
 # Any errors are ignored. Make clean is only called if cd success.
 # Assumes cwd is common parent dir
-make_clean_dir() {
+function make_clean_dir {
   trace "Entering make_clean_dir @ = $@"
   log Make clean for $1 called
   feedback_status "Cleaning out sources for $1"
@@ -1211,7 +1211,7 @@ make_clean_dir() {
 #################################################################
 # clean_dirs
 # Make clean in all directories
-clean_dirs() {
+function clean_dirs {
   trace "Entering clean_dirs @ = $@"
   feedback_status Cleaning out all subdirs
   cmd cd $SOURCE_DIR || mkdir -p $SOURCE_DIR
@@ -1228,7 +1228,7 @@ clean_dirs() {
 # Get the sources for a single project
 # Assumes cwd is common parent dir
 # Errors abort
-get_subproject() {
+function get_subproject {
   trace "Entering get_subproject @ = $@"
   feedback_status Getting or updating source for $1 - this could take some time
   cmd pushd .
@@ -1339,7 +1339,7 @@ get_subproject() {
 #################################################################
 # get_all_sources
 # Gets all the sources for all subprojects
-get_all_sources() {
+function get_all_sources {
   trace "Entering get_all_sources @ = $@"
   feedback_status Getting all sources
   log Changing to $SOURCE_DIR
@@ -1354,28 +1354,22 @@ get_all_sources() {
     cmd cd "$SOURCE_DIR"/..
     cat >src/README <<END_OF_SRC_README
 Basic Build Instructions for Shotcut
-
 We will not be able to cover everything here, and you are largely on your
 own, but here are some hints. There is a big build bash script that is used
 to make Shotcuts daily builds. It is the authoritative install reference:
   src/shotcut/scripts/build-shotcut.sh
-
 We cannot cover how to build all of Shotcut's dependencies from scratch here.
 On Linux, we rely upon Ubuntu's packages to provide most of the
 more mundane dependencies. The rest like x264, x265, libvpx, libopus,
 FFmpeg, and frei0r are provided by the script.
-
 For macOS, we rely upon macports to provide the dependencies:
   port install ffmpeg libsamplerate libsdl2 sox glib2 jack
-
 For Windows, see this page on the MLT wiki about getting pre-built
 dependencies from various sources on the Internet:
   https://www.mltframework.org/docs/windowsbuild/
 Except, now we build FFmpeg instead of using a pre-built copy.
-
 As for Shotcut itself:
   cd shotcut; mkdir build ; cd build ; cmake .. ; cmake --build .
-
 Then, there is the app bundling so that dependencies can be located and Qt
 plugins included. For that you really need to see the build script; it
 is fairly complicated especially on macOS. On Linux, we just use a
@@ -1402,7 +1396,7 @@ END_OF_SRC_README
 # replace_rpath
 # changes the embedded name of a dylib to its full install path so
 # it can be found later during bundling
-replace_rpath() {
+function replace_rpath {
   library=$1
   install_name=$(otool -D "$FINAL_INSTALL_DIR"/lib/lib${library}.dylib | tail -n 1)
   cmd install_name_tool -id "$FINAL_INSTALL_DIR"/lib/$(basename "$install_name") "$FINAL_INSTALL_DIR"/lib/lib${library}.dylib
@@ -1414,7 +1408,7 @@ replace_rpath() {
 # Configures, compiles, and installs a single subproject.
 # Assumes cwd is common parent dir
 # Errors abort
-configure_compile_install_subproject() {
+function configure_compile_install_subproject {
   trace "Entering configure_compile_install_subproject @ = $@"
   feedback_status Configuring, compiling, and installing $1
 
@@ -1516,7 +1510,7 @@ configure_compile_install_subproject() {
 #################################################################
 # configure_compile_install_all
 # Configures, compiles, and installs all subprojects
-configure_compile_install_all() {
+function configure_compile_install_all {
   trace "Entering configure_compile_install_all @ = $@"
   feedback_status Configuring, compiling and installing all sources
 
@@ -1554,7 +1548,7 @@ configure_compile_install_all() {
 # get_dir_info
 # Helper function for startup script creating - returns svn rev information
 # for a given directory
-get_dir_info() {
+function get_dir_info {
   # trace "Entering get_dir_info @ = $@"
   pushd . &> /dev/null
   cd $1 || die "Unable to change directory to $1"
@@ -1575,7 +1569,7 @@ get_dir_info() {
 #################################################################
 # sys_info
 # Returns some information about the system
-sys_info() {
+function sys_info {
   echo
   echo uname -a at time of compilation:
   uname -a
@@ -1594,7 +1588,7 @@ sys_info() {
   fi
 }
 
-bundle_libs()
+function bundle_libs
 {
   log bundling library dependencies of $(basename "$1")
   target=$(dirname "$1")/$(basename "$1")
@@ -1681,7 +1675,7 @@ bundle_libs()
   done
 }
 
-fixlibs()
+function fixlibs()
 {
   log bundling and fixing library paths of $(basename "$1")
   target=$(dirname "$1")/$(basename "$1")
@@ -1717,7 +1711,7 @@ fixlibs()
   done
 }
 
-deploy_mac()
+function deploy_mac
 {
   trace "Entering deploy_mac @ = $@"
   pushd .
@@ -1897,7 +1891,7 @@ deploy_mac()
 # create_startup_script
 # Creates a startup script. Note, that the actual script gets
 # embedded by the Makefile
-create_startup_script() {
+function create_startup_script {
   if test "$TARGET_OS" = "Darwin" ; then
     deploy_mac
     return
@@ -2060,7 +2054,7 @@ End-of-shotcut-wrapper
 #################################################################
 # perform_action
 # Actually do what the user wanted
-perform_action() {
+function perform_action {
   trace "Entering perform_action @ = $@"
   # Test that may fail goes here, before we do anything
   if test 1 = "$ACTION_CLEAN_SOURCE"; then
@@ -2090,7 +2084,7 @@ perform_action() {
 # This does not really work very very well, but its the best I can offer.
 # It may leave some defunct around(?)
 # $1 pid
-kill_recursive() {
+function kill_recursive {
   trace "Entering kill_recursive @ = $@"
   if test "$1" != "$$"; then
     # Stop it from spawning more kids
@@ -2105,7 +2099,7 @@ kill_recursive() {
 #################################################################
 # keep_checking_abort
 # Checks if the user indicated an abort through
-keep_checking_abort() {
+function keep_checking_abort {
   while test x`check_abort` = "xcont" ; do
     sleep 1
   done
@@ -2118,7 +2112,7 @@ keep_checking_abort() {
 #################################################################
 # main
 # Collects all the steps
-main() {
+function main {
   {
   sleep 1
   init_log_file
