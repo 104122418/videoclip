@@ -17,7 +17,7 @@ jobs:
           echo VERSION=$VERSION
           sudo apt install -yqq s3cmd
           s3cmd --access_key=${{ secrets.AWS_ACCESS_KEY }} --secret_key=${{ secrets.AWS_SECRET_KEY }} --stop-on-error get s3://aftvideo/aft-build-macos.txt
-          s3cmd --access_key=${{ secrets.AWS_ACCESS_KEY }} --secret_key=${{ secrets.AWS_SECRET_KEY }} --stop-on-error get s3://aftvideo/aft/shotcut-macos-unsigned-$VERSION.dmg
+#         s3cmd --access_key=${{ secrets.AWS_ACCESS_KEY }} --secret_key=${{ secrets.AWS_SECRET_KEY }} --stop-on-error get s3://aftvideo/aft/shotcut-macos-unsigned-$VERSION.dmg
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
