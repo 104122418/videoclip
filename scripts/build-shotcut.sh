@@ -389,7 +389,7 @@ read_configuration() {
 # set_globals
 # Set up globals based on configuration
 # This is where the configuration options for each subproject is assembled
-set_globals() {
+function set_globals {
   trace "Entering set_globals @ = $@"
 
   # Set debug flags
