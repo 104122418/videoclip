@@ -14,16 +14,20 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
+      - name: Download from S3
+        run: |
+          VERSION=$(date +"%y%m%d")
+          echo VERSION=$VERSION
+          sudo apt install -yqq s3cmd
+          s3cmd --access_key=${{ secrets.AWS_ACCESS_KEY }} --secret_key=${{ secrets.AWS_SECRET_KEY }} --stop-on-error get s3://aftvideo/aft-build-macos.txt
+          s3cmd --access_key=${{ secrets.AWS_ACCESS_KEY }} --secret_key=${{ secrets.AWS_SECRET_KEY }} --stop-on-error get s3://aftvideo/aft/shotcut-macos-unsigned-$VERSION.dmg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: unsigned-dmg
+          path: |
+            *.dmg
 
       - name: Dump log
-        shell: bash
-        run: |
-          pwd
-          ls
-          cd scripts
-          pwd
-          git --version
-          bash --version
-          sh build-shotcut.sh -o Darwin -a arm64
+        run: cat aft-build-macos.txt
