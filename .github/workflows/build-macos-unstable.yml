@@ -10,9 +10,6 @@ jobs:
   build:
     #if: ${{ github.repository_owner == 'mltframework' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     steps:
       - name: Download from S3
         run: |
