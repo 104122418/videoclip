@@ -24,4 +24,6 @@ jobs:
           ls
           cd scripts
           pwd
+          git --version
+          bash --version
           sh build-shotcut.sh
